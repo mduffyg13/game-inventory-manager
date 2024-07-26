@@ -1,0 +1,7 @@
+{
+    "games":[
+        { "id": 1, "name": "ICO", "platform": "PS2" },
+        { "id": 2, "name": "Yakuza", "platform": "PS2" },
+        { "id": 3, "name": "Super Mario Sunshine", "platform": "NGC" }
+    ]
+}
