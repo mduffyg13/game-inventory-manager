@@ -23,7 +23,7 @@ function Game() {
   const handleCreate = (item) => {
 
     console.log(`add item: ${JSON.stringify(item)}`)
-
+    
     fetch(API_URL, {
       method: 'POST',
       headers,

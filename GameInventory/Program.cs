@@ -1,19 +1,22 @@
-using GameInventory.Models;
+using GameInventory.Infrastructure.Persistance;
+using GameInventory.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+
 //sqlserver
-var connectionString = builder.Configuration.GetConnectionString("Games");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "";
 
 builder.Services.AddEndpointsApiExplorer();
 
-//in memory db
-//builder.Services.AddDbContext<GameDb>(options => options.UseInMemoryDatabase("items"));
-//persistance
-builder.Services.AddSqlServer<GameDb>(connectionString);
-//builder.Services.AddNpgsql<GameDb>(connectionString);
+builder.Services.AddSqlServer<GameInventoryContext>(connectionString, options =>
+{
+   options.MigrationsAssembly(typeof(Program).Assembly.FullName);
+});
+
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -34,28 +37,28 @@ if (app.Environment.IsDevelopment())
    });
 }
 
-app.MapGet("/games", async (GameDb db) => await db.Games.ToListAsync());
+app.MapGet("/games", async (GameInventoryContext db) => await db.Games.ToListAsync());
 
-app.MapGet("/games/{id}", async (GameDb db, int id) => await db.Games.FindAsync(id));
+app.MapGet("/games/{id}", async (GameInventoryContext db, int id) => await db.Games.FindAsync(id));
 
-app.MapPost("/games", async (GameDb db, Game game) =>
+app.MapPost("/games", async (GameInventoryContext db, Game game) =>
 {
     await db.Games.AddAsync(game);
     await db.SaveChangesAsync();
     return Results.Created($"/game/{game.Id}", game);
 });
 
-app.MapPut("/games/{id}", async (GameDb db, Game updateGame, int id) =>
+app.MapPut("/games/{id}", async (GameInventoryContext db, Game updateGame, int id) =>
 {
       var game = await db.Games.FindAsync(id);
       if (game is null) return Results.NotFound();
-      game.Name = updateGame.Name ?? game.Name;
-      game.Platform = updateGame.Platform ?? game.Platform;
+      game.Title = updateGame.Title ?? game.Title;
+      game.PlatformId = updateGame.PlatformId;
       await db.SaveChangesAsync();
       return Results.NoContent();
 });
 
-app.MapDelete("/games/{id}", async (GameDb db, int id) =>
+app.MapDelete("/games/{id}", async (GameInventoryContext db, int id) =>
 {
    var game = await db.Games.FindAsync(id);
    if (game is null)

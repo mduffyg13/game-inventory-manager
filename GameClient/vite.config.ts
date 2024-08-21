@@ -8,7 +8,7 @@ export default defineConfig({
     port: 3000,  // Client port
     proxy: {
       '/games': {
-        target: 'http://localhost:5100', // Mock server port
+        target: 'http://localhost:5013', // Mock server port
         changeOrigin: true,
         secure: false,
         ws: true,
@@ -24,6 +24,6 @@ export default defineConfig({
           });
         },
       }
-    }
+    } 
   }
 })
